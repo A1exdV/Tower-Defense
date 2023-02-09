@@ -35,7 +35,13 @@ namespace TileGridScripts
                 for (var y = 0; y < GridHeight; y++)
                 {
                     GridTiles.Add(new Tile(new Vector2Int(x,y)));
+                    
+                    Debug.DrawLine(new Vector3(x-0.5f,0,y-0.5f),new Vector3(x-0.5f,0,y+0.5f),Color.blue,100f);
+                    Debug.DrawLine(new Vector3(x-0.5f,0,y-0.5f),new Vector3(x+0.5f,0,y-0.5f),Color.blue,100f);
                 }
+                
+                Debug.DrawLine(new Vector3(-0.5f,0,GridHeight-0.5f),new Vector3(GridWidth-0.5f,0,GridHeight-0.5f),Color.blue,100f);
+                Debug.DrawLine(new Vector3(GridWidth-0.5f,0,-0.5f),new Vector3(GridWidth-0.5f,0,GridHeight-0.5f),Color.blue,100f);
             }
         }
         
