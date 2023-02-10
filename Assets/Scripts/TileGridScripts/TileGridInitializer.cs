@@ -45,13 +45,19 @@ namespace TileGridScripts
             _pathGenerator = new PathGenerator();
             _riverGenerator = new RiverGenerator();
             
+                
             InitializeGrid(gridWidth,gridHeight);
             
             GeneratePath();
             
-            if(allowRiver)
+            if(allowRiver) 
                 GenerateRiver();
-            
+
+            InitializeTiles();
+        }
+
+        private void InitializeTiles()
+        {
             StartCoroutine(InitializePathTiles());
             StartCoroutine(InitializeRiverTiles());
         }
@@ -116,27 +122,34 @@ namespace TileGridScripts
                     yield return new WaitForSeconds(0.1f);
                 }
             }
+            Debug.Log("Path created");
         }
 
         private GameObject SetTilePathVisual(Tile tile)
         {
+            GameObject GetGameObject(int visualIndex, int rotation) => Instantiate(
+                pathTile[visualIndex],
+                new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y),
+                Quaternion.Euler(0, rotation, 0)
+            );
+
             var newTileObject = _tileGrid.GetTileNeighbourIndex(tile.tileXZ,TileType.Path,TileType.Bridge) switch
             {
-                1 => Instantiate(pathTile[5], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 180, 0)),
-                2 => Instantiate(pathTile[5], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, -90, 0)),
-                3 => Instantiate(pathTile[2], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, -90, 0)),
-                4 => Instantiate(pathTile[0], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 90, 0)),
-                5 => Instantiate(pathTile[2], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 180, 0)),
-                6 => Instantiate(pathTile[1], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 90, 0)),
-                7 => Instantiate(pathTile[3], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 180, 0)),
-                8 => Instantiate(pathTile[5], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 0, 0)),
-                9 => Instantiate(pathTile[1], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 0, 0)),
-                10 => Instantiate(pathTile[2], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 0, 0)),
-                11 => Instantiate(pathTile[3], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, -90, 0)),
-                12 => Instantiate(pathTile[2], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 90, 0)),
-                13 => Instantiate(pathTile[3], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 90, 0)),
-                14 => Instantiate(pathTile[3], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 0, 0)),
-                15 => Instantiate(pathTile[4], new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 0, 0)),
+                1 => GetGameObject(PathVisual.End,  Rotation.Down),
+                2 => GetGameObject(PathVisual.End,  Rotation.Left),
+                3 => GetGameObject(PathVisual.Corner,  Rotation.Left),
+                4 => GetGameObject(PathVisual.Start,  Rotation.Right),
+                5 => GetGameObject(PathVisual.Corner,  Rotation.Down),
+                6 => GetGameObject(PathVisual.Straight,  Rotation.Right),
+                7 => GetGameObject(PathVisual.Split,  Rotation.Down),
+                8 => GetGameObject(PathVisual.End,  Rotation.None),
+                9 => GetGameObject(PathVisual.Straight,  Rotation.None),
+                10 => GetGameObject(PathVisual.Corner,  Rotation.None),
+                11 => GetGameObject(PathVisual.Split,  Rotation.Left),
+                12 => GetGameObject(PathVisual.Corner,  Rotation.Right),
+                13 => GetGameObject(PathVisual.Split,  Rotation.Right),
+                14 => GetGameObject(PathVisual.Split,  Rotation.None),
+                15 => GetGameObject(PathVisual.Crossing,  Rotation.None),
                 _ => throw new ArgumentException(_tileGrid.GetTileNeighbourIndex(tile.tileXZ,TileType.Path).ToString() +", " + tile.tileXZ)
             };
             return newTileObject;
@@ -148,7 +161,7 @@ namespace TileGridScripts
         
         private void GenerateRiver()
         {
-            _tileGrid = _riverGenerator.GenerateRiver(_tileGrid);
+            _riverGenerator.GenerateRiver(_tileGrid);
         }
 
         private IEnumerator InitializeRiverTiles()

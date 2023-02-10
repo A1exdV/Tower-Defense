@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using TileGridScripts.Enum;
 using UnityEngine;
 
@@ -13,6 +12,9 @@ namespace TileGridScripts
         public int GridHeight { get; private set;}
 
         public Tile EnemySpawnPoint { get; private set;}
+        
+        public Tile RiverStartTile { get; private set;}
+        public Tile RiverEndTile { get; private set;}
 
         
         public TileGrid (int gridWidth, int gridHeight)
@@ -25,6 +27,16 @@ namespace TileGridScripts
         public void SetEnemySpawnPoint(Tile newEnemySpawnPoint)
         {
             EnemySpawnPoint =newEnemySpawnPoint;
+        }
+        
+        public void SetRiverStartTile(int x,int y)
+        {
+            //RiverStartTile =newRiverStartTile;
+        }
+        
+        public void SetRiverEndTile(int x,int y)
+        {
+            //RiverEndTile =newRiverEnd;
         }
 
         public void GridTilesReset()
@@ -44,84 +56,69 @@ namespace TileGridScripts
                 Debug.DrawLine(new Vector3(GridWidth-0.5f,0,-0.5f),new Vector3(GridWidth-0.5f,0,GridHeight-0.5f),Color.blue,100f);
             }
         }
-        
-        
-        public bool TileIsEmpty(int x, int y,TileType tileType = default)
+
+
+        public bool TileIsEmpty(int x, int y, TileType tileType = default)
         {
             foreach (var tile in GridTiles)
             {
                 if (tileType == default)
                 {
-                    if (tile.tileXZ == new Vector2Int(x, y)& tile.tileType != default) 
+                    if (tile.tileXZ == new Vector2Int(x, y) & tile.tileType != default)
                         return false;
                 }
                 else
                 {
-                    if (tile.tileXZ == new Vector2Int(x, y) & tile.tileType == tileType) 
+                    if (tile.tileXZ == new Vector2Int(x, y) & tile.tileType == tileType)
                         return false;
                 }
             }
+
             return true;
         }
-    
-        public int GetTileNeighbourIndex(Vector2Int tileXZ, TileType tileType,TileType tileType2 = default)
+
+        public int GetTileNeighbourIndex(Vector2Int tileXZ, TileType tileType, TileType tileType2 = default)
         {
             var x = tileXZ.x;
             var y = tileXZ.y;
-        
-            var index = 0;
 
-            if (!TileIsEmpty(x, y-1,tileType))
+            int GetNeighbourIndex(TileType type)
             {
-                index +=1;
+                var neighbourIndex = 0;
+
+                if (!TileIsEmpty(x, y - 1, type))
+                    neighbourIndex += NeighbourIndex.Down;
+
+                if (!TileIsEmpty(x, y + 1, type))
+                    neighbourIndex += NeighbourIndex.Up;
+
+                if (!TileIsEmpty(x - 1, y, type))
+                    neighbourIndex += NeighbourIndex.Left;
+
+                if (!TileIsEmpty(x + 1, y, type))
+                    neighbourIndex += NeighbourIndex.Right;
+
+                return neighbourIndex;
             }
-            if (!TileIsEmpty(x, y+1,tileType))
-            {
-                index += 8;
-            }
-            if (!TileIsEmpty(x-1, y,tileType))
-            {
-                index += 2;
-            }
-            if (!TileIsEmpty(x+1, y,tileType))
-            {
-                index += 4;
-            }
+
+            var index = GetNeighbourIndex(tileType);
 
             if (tileType2 != default)
             {
-                if (!TileIsEmpty(x, y-1,tileType2))
-                {
-                    index +=1;
-                }
-                if (!TileIsEmpty(x, y+1,tileType2))
-                {
-                    index += 8;
-                }
-                if (!TileIsEmpty(x-1, y,tileType2))
-                {
-                    index += 2;
-                }
-                if (!TileIsEmpty(x+1, y,tileType2))
-                {
-                    index += 4;
-                }
+                index += GetNeighbourIndex(tileType2);
             }
+            
             return index;
         }
         
         public int GetTileIndex(int x, int y)
         {
-            foreach (var tile in GridTiles.Where(tile => tile.tileXZ == new Vector2Int(x, y)))
-            {
-                return GridTiles.IndexOf(tile);
-            }
-            throw new Exception(x.ToString() + y.ToString());
-        }
+            var index = x * GridHeight + y;
 
-        public object Clone()
-        {
-            return this.MemberwiseClone();
+            if (index > GridTiles.Count - 1)
+                throw new IndexOutOfRangeException($"x: {x}, y: {y}");
+            
+            return index;
         }
     }
 }

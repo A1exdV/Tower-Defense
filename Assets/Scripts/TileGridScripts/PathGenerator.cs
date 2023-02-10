@@ -1,7 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TileGridScripts.Enum;
-using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace TileGridScripts
 {
@@ -31,7 +32,7 @@ namespace TileGridScripts
                 while (!validMove)
                 {
                     var move = Random.Range(0, 3);
-                
+                    
                     if (x % 2 == 0 || x>(_width-2))
                     {
                         x++;

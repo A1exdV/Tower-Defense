@@ -1,6 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
 using TileGridScripts.Enum;
-using Unity.VisualScripting;
+using TileGridScripts.Utils;
 using UnityEngine;
 
 namespace TileGridScripts
@@ -16,19 +17,29 @@ namespace TileGridScripts
             _height = tileGrid.GridHeight;
             _width = tileGrid.GridWidth;
             
-            var success = false;
-            while (!success)
+            while (true)
             {
-                success = TryToGenerateRiver(tileGrid);
+                var (isSuccess, oldTileTypes) = TryToGenerateRiver(tileGrid);
+
+                if (!isSuccess)
+                {
+                    tileGrid.GridTiles.ForEachIndexed((tile, index) => tile.tileType = oldTileTypes[index]);
+                }
+                else
+                {
+                    break;
+                }
             }
             
             return _tempGrid;
         }
 
-        private bool TryToGenerateRiver(TileGrid tileGrid)
+        private (bool, List<TileType>) TryToGenerateRiver(TileGrid tileGrid)
         {
-            _tempGrid = null;
-            _tempGrid = (TileGrid)tileGrid.Clone();
+            _tempGrid = tileGrid;
+
+            var oldTileTypes = tileGrid.GridTiles.Select(tile => tile.tileType).ToList();
+            
             var x = Random.Range(1, _width-1);
             var y = _height-1;
 
@@ -41,6 +52,8 @@ namespace TileGridScripts
                 var failRight = false;
                 
                 _tempGrid.GridTiles[index].tileType = _tempGrid.GridTiles[index].tileType == TileType.Path ? TileType.Bridge : TileType.River;
+                
+                //set new river start tile
 
                 var validMove = false;
                 
@@ -48,14 +61,15 @@ namespace TileGridScripts
                 {
                     if (failLeft == true & failBottom == true & failRight == true)
                     {
-                        return false;
+                        Debug.Log("Retrying river generation");
+                        return (false, oldTileTypes);
                     }
                     
                     if (y % 2 == 0)
                     {
                         if(!_tempGrid.TileIsEmpty(x, y-1) & !CheckForStraitPath(_tempGrid, x, y-1))
                         {
-                            return false;
+                            return (false, oldTileTypes);
                         }
                         y--;
                         break;
@@ -118,7 +132,8 @@ namespace TileGridScripts
                     }
                 }
             }
-            return true;
+            //set new river end tile
+            return (true, oldTileTypes);
         }
 
 
@@ -130,7 +145,6 @@ namespace TileGridScripts
                 {
                     case 6:
                     case 9:
-                        Debug.Log($"{tileGrid.GetTileNeighbourIndex(new Vector2Int(x,y), TileType.Path)}, {x},{y}");
                         return true;
                     default:
                         return false;
