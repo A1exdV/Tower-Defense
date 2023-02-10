@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using TileGridScripts.Enum;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace TileGridScripts
 {
@@ -17,19 +19,23 @@ namespace TileGridScripts
         [SerializeField] private bool canBeGreater = true;
         [SerializeField] private List<GameObject> pathTile;
     
-        [Header("Objects")]
+        [Header("Ground")]
+        [SerializeField] private List<GameObject> groundTile;
+        
+        [Header("River")]
         [SerializeField] private bool allowRiver = false;
         [SerializeField] private List<GameObject> riverTile;
-    
-        [Tooltip("if 0 number will be random")]
+        
+        [Header("Objects")]
+        [Tooltip("if 0 number will be random(not working)")]
         [SerializeField] private int treesNumber = 8;
         [SerializeField] private List<GameObject> treeTile;
     
-        [Tooltip("if 0 number will be random")]
+        [Tooltip("if 0 number will be random(not working)")]
         [SerializeField] private int rocksNumber = 8;
         [SerializeField] private List<GameObject> rockTile;
     
-        [Tooltip("if 0 number will be random")]
+        [Tooltip("if 0 number will be random(not working)")]
         [SerializeField] private int crystalsNumber = 4;
         [SerializeField] private List<GameObject> crystalTile;
     
@@ -45,7 +51,6 @@ namespace TileGridScripts
             _pathGenerator = new PathGenerator();
             _riverGenerator = new RiverGenerator();
             
-                
             InitializeGrid(gridWidth,gridHeight);
             
             GeneratePath();
@@ -53,13 +58,58 @@ namespace TileGridScripts
             if(allowRiver) 
                 GenerateRiver();
 
-            InitializeTiles();
+            GenerateResources();
+            FillEmptyTilesWithGround();
+
+            StartCoroutine(InitializeTiles());
+            print("Done");
+            
         }
 
-        private void InitializeTiles()
+        private IEnumerator InitializeTiles()
         {
-            StartCoroutine(InitializePathTiles());
-            StartCoroutine(InitializeRiverTiles());
+            foreach (var tile in _tileGrid.GridTiles)
+            {
+                switch (tile.tileType)
+                {
+                    case TileType.Path:
+                        InitializePathTile(tile);
+                        break;
+                    case TileType.Ground:
+                        InitializeRiverTile(tile,TileType.Ground,groundTile);
+                        break;
+                    case TileType.River:
+                        InitializeRiverTile(tile);
+                        break;
+                    case TileType.Bridge:
+                        InitializeRiverTile(tile);
+                        break;
+                    case TileType.Rock:
+                        InitializeRiverTile(tile,TileType.Rock,rockTile);
+                        break;
+                    case TileType.Tree:
+                        InitializeRiverTile(tile,TileType.Tree,treeTile);
+                        break;
+                    case TileType.Crystal:
+                        InitializeRiverTile(tile,TileType.Crystal,crystalTile);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                yield return new WaitForSeconds(0.05f);
+            }
+            //debug
+            foreach (var tile in _tileGrid.GridTiles)
+            {
+                if (tile.previousPathTile != null)
+                {
+                    print(tile.previousPathTile.tileObject.transform.position);
+                    Debug.DrawLine(tile.tileObject.transform.position+Vector3.up,
+                        tile.previousPathTile.tileObject.transform.position+Vector3.up,
+                        Color.red, 100f);
+                }
+            }
         }
 
         #region Initialization -----------------------------------------------------------------------------------------
@@ -104,25 +154,16 @@ namespace TileGridScripts
             _tileGrid = _pathGenerator.GeneratePath(_tileGrid);
         }
     
-        private IEnumerator InitializePathTiles()
+        private void InitializePathTile(Tile tile)
         {
-            Tile previousPathTile = null;
-            foreach (var tile in _tileGrid.GridTiles)
+            if (tile.tileType == TileType.Path)
             {
-                if (tile.tileType == TileType.Path)
-                {
-                    var newTileObject = SetTilePathVisual(tile);
-                    newTileObject.transform.parent = _grid.transform;
-                    newTileObject.name = "PathTile";
-                    newTileObject.tag = "Path";
-                    tile.tileObject = newTileObject;
-                    tile.previousPathTile = previousPathTile;
-                    previousPathTile = tile;
-
-                    yield return new WaitForSeconds(0.1f);
-                }
+                var newTileObject = SetTilePathVisual(tile);
+                newTileObject.transform.parent = _grid.transform;
+                newTileObject.name = "PathTile";
+                newTileObject.tag = "Path";
+                tile.tileObject = newTileObject;
             }
-            Debug.Log("Path created");
         }
 
         private GameObject SetTilePathVisual(Tile tile)
@@ -164,30 +205,24 @@ namespace TileGridScripts
             _riverGenerator.GenerateRiver(_tileGrid);
         }
 
-        private IEnumerator InitializeRiverTiles()
+        private void InitializeRiverTile(Tile tile)
         {
-            foreach (var tile in _tileGrid.GridTiles)
+            if (tile.tileType == TileType.Bridge)
             {
-                if (tile.tileType == TileType.Bridge)
-                {
-                    var newTileObject = SetTileBridgeVisual(tile);
-                    newTileObject.transform.parent = _grid.transform;
-                    newTileObject.name = "BridgeTile";
-                    newTileObject.tag = "Bridge";
-                    tile.tileObject = newTileObject;
-
-                    yield return new WaitForSeconds(0.1f);
-                }
-                if (tile.tileType == TileType.River)
-                {
-                    var newTileObject = SetTileRiverVisual(tile);
-                    newTileObject.transform.parent = _grid.transform;
-                    newTileObject.name = "RiverTile";
-                    newTileObject.tag = "River";
-                    tile.tileObject = newTileObject;
-
-                    yield return new WaitForSeconds(0.1f);
-                }
+                var newTileObject = SetTileBridgeVisual(tile);
+                newTileObject.transform.parent = _grid.transform;
+                newTileObject.name = "BridgeTile";
+                newTileObject.tag = "Bridge";
+                tile.tileObject = newTileObject;
+                    
+            }
+            if (tile.tileType == TileType.River)
+            {
+                var newTileObject = SetTileRiverVisual(tile);
+                newTileObject.transform.parent = _grid.transform;
+                newTileObject.name = "RiverTile";
+                newTileObject.tag = "River";
+                tile.tileObject = newTileObject;
             }
         }
         
@@ -222,5 +257,51 @@ namespace TileGridScripts
         }
         
         #endregion
+
+        #region Resources
+
+        private void GenerateResources()
+        {
+                GenerateTileByType(TileType.Tree,treesNumber,treeTile);
+                GenerateTileByType(TileType.Rock,rocksNumber,rockTile);
+                GenerateTileByType(TileType.Crystal,crystalsNumber,crystalTile);
+        }
+        
+        
+        private void GenerateTileByType(TileType tileType, int count, List<GameObject> prefab)
+        {
+            for (var i = 0; i < count; i++)
+            {
+                Tile tile;
+                do
+                {
+                    var randomIndex = Random.Range(0, (_tileGrid.GridWidth)*(_tileGrid.GridHeight));
+                    tile = _tileGrid.GridTiles[randomIndex];
+                } while (tile.tileType != default);
+
+                tile.tileType = tileType;
+                
+            }
+        }
+
+        private void InitializeRiverTile(Tile tile, TileType tileType,List<GameObject> prefab)
+        {
+            tile.tileObject = Instantiate(prefab[Random.Range(0, prefab.Count)], 
+                     new Vector3(tile.tileXZ.x, 0, tile.tileXZ.y), Quaternion.Euler(0, 0, 0));
+            tile.tileObject.transform.parent = _grid.transform;
+            tile.tileObject.name = $"{tileType.ToString()}Tile";
+            tile.tileObject.tag = tileType.ToString();
+        }
+
+        #endregion
+
+        private void FillEmptyTilesWithGround()
+        {
+            foreach (var tile in _tileGrid.GridTiles.Where(tile => tile.tileType == default))
+            {
+                tile.tileType = TileType.Ground;
+            }
+        }
+        
     }
 }

@@ -9,6 +9,6 @@ namespace TileGridScripts.Enum
         Bridge,
         Rock,
         Tree,
-        Cristal
+        Crystal
     }
 }

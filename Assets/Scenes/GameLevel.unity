@@ -200,8 +200,8 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 330585543}
-  m_LocalRotation: {x: -0.44166467, y: -0.10402574, z: 0.051644523, w: -0.88963133}
-  m_LocalPosition: {x: 6.963349, y: 11.268585, z: -3.6856441}
+  m_LocalRotation: {x: -0.37216297, y: -0.19224063, z: 0.079092376, w: -0.9045898}
+  m_LocalPosition: {x: 5.3542347, y: 18.215557, z: -8.556206}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -445,21 +445,23 @@ MonoBehaviour:
   - {fileID: 9185351134394480391, guid: 0d00a99432ab66e4392574bbaa75e2ea, type: 3}
   - {fileID: 1489951358864055230, guid: 9ecff8ac757372f4aa501331292adbd3, type: 3}
   - {fileID: 9148973742727406597, guid: 1e72455667b94e34eb8cb1fdf4d372a7, type: 3}
+  groundTile:
+  - {fileID: 6711161743473676027, guid: 34aa3d6a980e217489cb4f33f2afaf93, type: 3}
   allowRiver: 1
   riverTile:
   - {fileID: 3030851041412998572, guid: 511262d19a2d84c499ffeef4a1ac1f73, type: 3}
   - {fileID: 3030851041412998572, guid: 5a6cb851c7270ed4395386aac28a1871, type: 3}
   - {fileID: 3030851041412998572, guid: b9d78c4faf7734b4fa0ccd97edc7a756, type: 3}
-  treesNumber: 8
+  treesNumber: 10
   treeTile:
   - {fileID: 1973118730488133837, guid: 8497af45e7125d04b9a66ec28080ccee, type: 3}
   - {fileID: 497250340692243821, guid: 85cb2401f44596840b849f9b2adad62e, type: 3}
   - {fileID: 567567998565942047, guid: 0c8671a9b4ff81249b5d6a1a30a02f94, type: 3}
-  rocksNumber: 8
+  rocksNumber: 10
   rockTile:
   - {fileID: 7858082601197278770, guid: 9664d2073d2d4b448a2e5a49411515c1, type: 3}
   - {fileID: 7858082601197278770, guid: 9f10b99f480bb11438eeec1cbbd9a807, type: 3}
-  crystalsNumber: 4
+  crystalsNumber: 5
   crystalTile:
   - {fileID: 7502460320259176616, guid: da07040537d27f14986ff3fac40e9a07, type: 3}
 --- !u!4 &1071087583

@@ -21,7 +21,9 @@ namespace TileGridScripts
             
             var y = _height / 2;
             var x = 0;
-        
+
+            Tile previousPathTile = null;
+            
             while (x < _width)
             {
                 var index = tileGrid.GetTileIndex(x, y);
@@ -44,6 +46,7 @@ namespace TileGridScripts
                         case 0:
                             x++;
                             validMove = true;
+                            
                             break;
                         case 1:
                             if (tileGrid.TileIsEmpty(x, y + 1) && y < (_height-2))
@@ -61,8 +64,10 @@ namespace TileGridScripts
                             break;
                     } 
                 }
-                tileGrid.SetEnemySpawnPoint(tileGrid.GridTiles[index]);
+                tileGrid.GridTiles[index].previousPathTile = previousPathTile;
+                previousPathTile = tileGrid.GridTiles[index];
             }
+            tileGrid.SetEnemySpawnPoint(tileGrid.GridTiles[x*y]);
             return tileGrid;
         }
 

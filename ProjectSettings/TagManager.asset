@@ -7,6 +7,10 @@ TagManager:
   - Path
   - River
   - Bridge
+  - Ground
+  - Tree
+  - Rock
+  - Crystal
   layers:
   - Default
   - TransparentFX

@@ -42,8 +42,8 @@ namespace TileGridScripts
             
             var x = Random.Range(1, _width-1);
             var y = _height-1;
-
-            while (y>0)
+            _tempGrid.SetRiverStartTile(x,y);
+            while (y>=0)
             {
                 var index = _tempGrid.GetTileIndex(x, y);
                 
@@ -132,7 +132,7 @@ namespace TileGridScripts
                     }
                 }
             }
-            //set new river end tile
+            _tempGrid.SetRiverEndTile(x,y);
             return (true, oldTileTypes);
         }
 
